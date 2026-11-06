@@ -52,11 +52,9 @@
             <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
                 Quiz: Roles y Protocolos de Emergencia
             </h1>
-            <p class="text-lg text-slate-600 mb-8 max-w-lg mx-auto">
-                Pon a prueba tus conocimientos sobre los protocolos de seguridad minera y la actuación ante emergencias.
-            </p>
+
             <button onclick="startQuiz()" class="bg-safety-blue hover:bg-blue-900 text-white font-bold py-4 px-10 rounded-xl text-lg transition-colors shadow-md w-full sm:w-auto inline-flex items-center justify-center gap-2">
-                Comenzar Evaluación <i class="fa-solid fa-arrow-right"></i>
+                Comenzar<i class="fa-solid fa-arrow-right"></i>
             </button>
         </div>
 
@@ -66,9 +64,6 @@
             <div class="flex justify-between items-center mb-6">
                 <span id="question-counter" class="text-sm font-semibold text-safety-blue bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
                     Pregunta 1 de 3
-                </span>
-                <span class="text-sm font-medium text-slate-500">
-                    <i class="fa-solid fa-shield-halved text-safety-orange mr-1"></i> Seguridad Industrial
                 </span>
             </div>
 
@@ -98,10 +93,13 @@
                 </div>
             </div>
 
-            <!-- Botón Siguiente -->
-            <div class="text-right">
-                <button id="next-btn" onclick="nextQuestion()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-md w-full sm:w-auto">
-                    Siguiente Pregunta <i class="fa-solid fa-chevron-right ml-2"></i>
+        <!-- Botones de Navegación -->
+            <div class="flex justify-between items-center mt-8">
+                <button id="prev-btn" onclick="previousQuestion()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm">
+                    <i class="fa-solid fa-chevron-left mr-2"></i> Anterior
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-md ml-auto">
+                    Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
                 </button>
             </div>
         </div>
@@ -166,7 +164,7 @@
                     "Comando de Incidente (CI)",
                     "Brigada de rescate"
                 ],
-                correctAnswer: 2,
+                correctAnswer: 1,
                 explanation: "El Comandeo de Incidente (CI) solicita la activación del plan de ayuda mutua cuando la emergencia no puede ser controlada."
             },
             {
@@ -176,7 +174,7 @@
                     "Superintendente de area",
                     "Brigada de rescate"
                 ],
-                correctAnswer: 3,
+                correctAnswer: 2,
                 explanation: "La brigada de rescate debe verificar que el total del personal en inmuebles o interior mina se encuentren fuera."
             },
             {
@@ -185,7 +183,7 @@
                     "Cierto",
                     "Falso"
                 ],
-                correctAnswer: 2,
+                correctAnswer: 1,
                 explanation: "Falso, se debe permanecer en el punto de reunión hasta que el CI de indicaciones."
             },
             {
@@ -195,8 +193,8 @@
                     "TAG de ubicación",
                     "Gas fetido"
                 ],
-                correctAnswer: 3,
-                explanation: "La alerta de evacuación se emite mediante gas fétido o alarmas sonoras."
+                correctAnswer: 2,
+                explanation: "La alerta de evacuación para interior mina se emite mediante gas fétido o alarmas sonoras."
             },
             {
                 question: "Sitio en el que podemos resguardarnos en caso de presencia de humo en interior mina, si no logramos evacuar a superficie:",
@@ -205,13 +203,13 @@
                     "Comedor",
                     "Mine sump"
                 ],
-                correctAnswer: 1,
+                correctAnswer: 0,
                 explanation: "Diríjase al refugio minero más cercano en caso de no ser posible salir."
             }
         ];
 
         let currentQuestionIndex = 0;
-        let score = 0;
+        let questionScores = []; // <-- Cambiamos "score" por un arreglo para no duplicar puntos
 
         // Elementos del DOM
         const startScreen = document.getElementById('start-screen');
@@ -228,6 +226,7 @@
         const feedbackTitle = document.getElementById('feedback-title');
         const feedbackText = document.getElementById('feedback-text');
         const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn'); // <-- Agregamos el botón anterior
 
         function startQuiz() {
             startScreen.classList.remove('block');
@@ -236,7 +235,7 @@
             quizScreen.classList.add('block');
             
             currentQuestionIndex = 0;
-            score = 0;
+            questionScores = new Array(quizData.length).fill(0); // <-- Inicializamos los puntos en cero
             loadQuestion();
         }
 
@@ -244,6 +243,12 @@
             // Resetear interfaz
             feedbackContainer.classList.add('hidden');
             nextBtn.classList.add('hidden');
+	// Ocultar botón anterior si es la primera pregunta
+            if (currentQuestionIndex === 0) {
+                prevBtn.classList.add('hidden');
+            } else {
+                prevBtn.classList.remove('hidden');
+            }
             optionsContainer.innerHTML = '';
             
             const currentQuestion = quizData[currentQuestionIndex];
@@ -305,8 +310,8 @@
                 icon.classList.add('fa-circle-xmark', 'text-safety-red');
                 selectedButton.querySelector('.w-8').classList.replace('bg-slate-100', 'bg-safety-red');
                 selectedButton.querySelector('.w-8').classList.replace('text-slate-500', 'text-white');
-            } else {
-                score++;
+		} else {
+                questionScores[currentQuestionIndex] = 1; // Guarda un punto
             }
 
             showFeedback(isCorrect, currentQuestion.explanation);
@@ -352,7 +357,17 @@
             }
         }
 
-        function showResults() {
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                // Efecto de transición
+                quizScreen.classList.remove('fade-in');
+                void quizScreen.offsetWidth; 
+                quizScreen.classList.add('fade-in');
+                loadQuestion();
+            }
+        }
+	function showResults() {
             quizScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
             resultScreen.classList.add('block');
@@ -361,10 +376,12 @@
             const scoreText = document.getElementById('score-text');
             const resultMessage = document.getElementById('result-message');
             
-            const percentage = (score / quizData.length) * 100;
+            // Sumar los puntos obtenidos
+            const finalScore = questionScores.reduce((a, b) => a + b, 0);
+            const percentage = (finalScore / quizData.length) * 100;
 
-            scoreText.innerHTML = `Has acertado <strong>${score} de ${quizData.length}</strong> preguntas.`;
-
+            scoreText.innerHTML = `Has acertado <strong>${finalScore} de ${quizData.length}</strong> preguntas.`;
+            
             if (percentage === 100) {
                 resultIcon.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg text-5xl text-white bg-safety-green shadow-emerald-500/30";
                 resultIcon.innerHTML = '<i class="fa-solid fa-medal"></i>';
