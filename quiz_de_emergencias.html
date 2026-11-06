@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Roles y Protocolos de Emergencia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        safety: {
+                            blue: '#1e3a8a', // Dark blue
+                            orange: '#f97316', // Alert orange
+                            green: '#10b981', // Success green
+                            red: '#ef4444', // Error red
+                            light: '#f8fafc' // Background
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .option-btn:active:not(:disabled) { transform: translateY(0); }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 text-slate-800">
+
+    <!-- Contenedor Principal (Estilo Tarjeta) -->
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-200">
+        
+        <!-- PANTALLA DE INICIO -->
+        <div id="start-screen" class="p-8 sm:p-12 text-center fade-in block">
+            <div class="w-24 h-24 bg-safety-blue text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-900/20">
+                <i class="fa-solid fa-helmet-safety text-5xl"></i>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
+                Quiz: Roles y Protocolos de Emergencia
+            </h1>
+            <p class="text-lg text-slate-600 mb-8 max-w-lg mx-auto">
+                Pon a prueba tus conocimientos sobre los protocolos de seguridad minera y la actuación ante emergencias.
+            </p>
+            <button onclick="startQuiz()" class="bg-safety-blue hover:bg-blue-900 text-white font-bold py-4 px-10 rounded-xl text-lg transition-colors shadow-md w-full sm:w-auto inline-flex items-center justify-center gap-2">
+                Comenzar Evaluación <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- PANTALLA DE PREGUNTAS -->
+        <div id="quiz-screen" class="p-6 sm:p-10 fade-in hidden">
+            <!-- Barra superior: Progreso -->
+            <div class="flex justify-between items-center mb-6">
+                <span id="question-counter" class="text-sm font-semibold text-safety-blue bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                    Pregunta 1 de 3
+                </span>
+                <span class="text-sm font-medium text-slate-500">
+                    <i class="fa-solid fa-shield-halved text-safety-orange mr-1"></i> Seguridad Industrial
+                </span>
+            </div>
+
+            <!-- Progreso Visual -->
+            <div class="w-full bg-slate-200 rounded-full h-2 mb-8">
+                <div id="progress-bar" class="bg-safety-orange h-2 rounded-full transition-all duration-500" style="width: 33%;"></div>
+            </div>
+
+            <!-- Pregunta -->
+            <h2 id="question-text" class="text-2xl sm:text-3xl font-bold text-slate-900 mb-8 leading-tight">
+                <!-- Texto de la pregunta -->
+            </h2>
+
+            <!-- Opciones -->
+            <div id="options-container" class="space-y-4 mb-8">
+                <!-- Botones generados por JS -->
+            </div>
+
+            <!-- Retroalimentación (Oculta inicialmente) -->
+            <div id="feedback-container" class="hidden rounded-xl p-5 mb-6 fade-in border-l-4">
+                <div class="flex items-start gap-4">
+                    <div id="feedback-icon" class="text-2xl mt-1"></div>
+                    <div>
+                        <h3 id="feedback-title" class="text-lg font-bold mb-1"></h3>
+                        <p id="feedback-text" class="text-slate-700"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Siguiente -->
+            <div class="text-right">
+                <button id="next-btn" onclick="nextQuestion()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-md w-full sm:w-auto">
+                    Siguiente Pregunta <i class="fa-solid fa-chevron-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE RESULTADOS -->
+        <div id="result-screen" class="p-8 sm:p-12 text-center fade-in hidden">
+            <div id="result-icon" class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg text-5xl text-white">
+                <!-- Icono generado por JS -->
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Evaluación Completada</h1>
+            <p id="score-text" class="text-xl text-slate-600 mb-6"></p>
+            
+            <div id="result-message" class="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8 text-lg text-slate-700">
+                <!-- Mensaje final -->
+            </div>
+
+            <button onclick="restartQuiz()" class="bg-safety-blue hover:bg-blue-900 text-white font-bold py-4 px-10 rounded-xl text-lg transition-colors shadow-md w-full sm:w-auto inline-flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> Reiniciar Quiz
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Lógica de la aplicación -->
+    <script>
+        // Base de datos de preguntas
+        const quizData = [
+            {
+                question: "¿Quién autoriza el ingreso de la cuadrilla de rescate y determina si se activan las alarmas?",
+                options: [
+                    "Seguridad Industrial",
+                    "Brigada de Evacuación",
+                    "Comando de Incidente (CI)"
+                ],
+                correctAnswer: 2,
+                explanation: "El Comando de Incidente (CI) es el responsable de coordinar las estrategias, solicitar auxilio especializado y determinar junto con Seguridad Industrial si es necesario activar los sistemas de alarmas."
+            },
+            {
+                question: "¿Qué se debe mencionar de viva voz para reportar la situación al detectar una emergencia?",
+                options: [
+                    "¡Ayuda, ayuda!",
+                    "EMERGENCIA, EMERGENCIA, EMERGENCIA",
+                    "Fuego, Fuego"
+                ],
+                correctAnswer: 1,
+                explanation: "Según el protocolo, se debe dar aviso de viva voz mencionando 'EMERGENCIA, EMERGENCIA, EMERGENCIA' o utilizar este mismo código vía radio en la frecuencia correspondiente."
+            },
+            {
+                question: "Si hay presencia de humo durante la evacuación, ¿qué equipo específico se debe utilizar?",
+                options: [
+                    "Mascarilla N95",
+                    "Autorrescatador",
+                    "Paño húmedo"
+                ],
+                correctAnswer: 1,
+                explanation: "Las reglas de uso de equipo de protección dictan que se debe utilizar el autorrescatador de forma inmediata si hay presencia de humo durante la evacuación."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Elementos del DOM
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const questionCounter = document.getElementById('question-counter');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackIcon = document.getElementById('feedback-icon');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackText = document.getElementById('feedback-text');
+        const nextBtn = document.getElementById('next-btn');
+
+        function startQuiz() {
+            startScreen.classList.remove('block');
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            quizScreen.classList.add('block');
+            
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            // Resetear interfaz
+            feedbackContainer.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            optionsContainer.innerHTML = '';
+            
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            // Actualizar contadores
+            questionCounter.innerText = `Pregunta ${currentQuestionIndex + 1} de ${quizData.length}`;
+            progressBar.style.width = `${((currentQuestionIndex + 1) / quizData.length) * 100}%`;
+            questionText.innerText = currentQuestion.question;
+
+            // Crear botones de opciones
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = "option-btn w-full text-left bg-white border-2 border-slate-200 text-slate-700 font-medium py-4 px-6 rounded-xl hover:border-safety-blue hover:text-safety-blue focus:outline-none flex justify-between items-center";
+                
+                // Letras para las opciones (A, B, C)
+                const letter = String.fromCharCode(65 + index);
+                
+                button.innerHTML = `
+                    <span class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm border border-slate-200">${letter}</span>
+                        <span class="text-lg">${option}</span>
+                    </span>
+                    <i class="fa-solid fa-circle-check text-xl hidden status-icon"></i>
+                `;
+                button.onclick = () => selectOption(index, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedButton) {
+            const currentQuestion = quizData[currentQuestionIndex];
+            const isCorrect = selectedIndex === currentQuestion.correctAnswer;
+            
+            // Deshabilitar todos los botones
+            const allButtons = optionsContainer.querySelectorAll('button');
+            allButtons.forEach((btn, index) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:border-safety-blue', 'hover:text-safety-blue');
+                btn.classList.add('opacity-70', 'cursor-not-allowed');
+                
+                // Marcar la respuesta correcta en verde siempre
+                if (index === currentQuestion.correctAnswer) {
+                    btn.classList.remove('border-slate-200', 'text-slate-700', 'opacity-70');
+                    btn.classList.add('border-safety-green', 'bg-emerald-50', 'text-emerald-900', 'opacity-100');
+                    const icon = btn.querySelector('.status-icon');
+                    icon.classList.remove('hidden');
+                    icon.classList.add('text-safety-green');
+                    btn.querySelector('.w-8').classList.replace('bg-slate-100', 'bg-safety-green');
+                    btn.querySelector('.w-8').classList.replace('text-slate-500', 'text-white');
+                }
+            });
+
+            // Si se equivocó, marcar la seleccionada en rojo
+            if (!isCorrect) {
+                selectedButton.classList.remove('border-slate-200', 'opacity-70');
+                selectedButton.classList.add('border-safety-red', 'bg-rose-50', 'text-rose-900', 'opacity-100');
+                const icon = selectedButton.querySelector('.status-icon');
+                icon.classList.remove('fa-circle-check', 'hidden');
+                icon.classList.add('fa-circle-xmark', 'text-safety-red');
+                selectedButton.querySelector('.w-8').classList.replace('bg-slate-100', 'bg-safety-red');
+                selectedButton.querySelector('.w-8').classList.replace('text-slate-500', 'text-white');
+            } else {
+                score++;
+            }
+
+            showFeedback(isCorrect, currentQuestion.explanation);
+        }
+
+        function showFeedback(isCorrect, explanation) {
+            feedbackContainer.classList.remove('hidden', 'bg-emerald-50', 'border-safety-green', 'text-emerald-900', 'bg-rose-50', 'border-safety-red', 'text-rose-900');
+            
+            if (isCorrect) {
+                feedbackContainer.classList.add('bg-emerald-50', 'border-safety-green', 'text-emerald-900');
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-circle-check text-safety-green"></i>';
+                feedbackTitle.innerText = '¡Correcto!';
+                feedbackTitle.className = 'text-lg font-bold mb-1 text-emerald-800';
+            } else {
+                feedbackContainer.classList.add('bg-rose-50', 'border-safety-red', 'text-rose-900');
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-safety-red"></i>';
+                feedbackTitle.innerText = 'Respuesta Incorrecta';
+                feedbackTitle.className = 'text-lg font-bold mb-1 text-rose-800';
+            }
+            
+            feedbackText.innerText = explanation;
+            
+            // Cambiar texto de botón si es la última pregunta
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.innerHTML = 'Ver Resultados <i class="fa-solid fa-flag-checkered ml-2"></i>';
+            } else {
+                nextBtn.innerHTML = 'Siguiente Pregunta <i class="fa-solid fa-chevron-right ml-2"></i>';
+            }
+            
+            nextBtn.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                // Animar salida y entrada
+                quizScreen.classList.remove('fade-in');
+                void quizScreen.offsetWidth; // Trigger reflow
+                quizScreen.classList.add('fade-in');
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            resultScreen.classList.add('block');
+
+            const resultIcon = document.getElementById('result-icon');
+            const scoreText = document.getElementById('score-text');
+            const resultMessage = document.getElementById('result-message');
+            
+            const percentage = (score / quizData.length) * 100;
+
+            scoreText.innerHTML = `Has acertado <strong>${score} de ${quizData.length}</strong> preguntas.`;
+
+            if (percentage === 100) {
+                resultIcon.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg text-5xl text-white bg-safety-green shadow-emerald-500/30";
+                resultIcon.innerHTML = '<i class="fa-solid fa-medal"></i>';
+                resultMessage.innerHTML = "<strong>¡Excelente trabajo!</strong> Dominas a la perfección los protocolos de emergencia. Tu preparación puede salvar vidas.";
+                resultMessage.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-6 mb-8 text-lg text-emerald-800";
+            } else if (percentage >= 50) {
+                resultIcon.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg text-5xl text-white bg-safety-orange shadow-orange-500/30";
+                resultIcon.innerHTML = '<i class="fa-solid fa-thumbs-up"></i>';
+                resultMessage.innerHTML = "<strong>Buen trabajo</strong>, pero aún hay áreas de mejora. En situaciones de emergencia, conocer cada detalle del protocolo es vital.";
+                resultMessage.className = "bg-orange-50 border border-orange-200 rounded-xl p-6 mb-8 text-lg text-orange-800";
+            } else {
+                resultIcon.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg text-5xl text-white bg-safety-red shadow-rose-500/30";
+                resultIcon.innerHTML = '<i class="fa-solid fa-book-open"></i>';
+                resultMessage.innerHTML = "<strong>Atención necesaria.</strong> Te recomendamos repasar detenidamente el manual de procedimientos de evacuación e identificar claramente las funciones de cada brigada.";
+                resultMessage.className = "bg-rose-50 border border-rose-200 rounded-xl p-6 mb-8 text-lg text-rose-800";
+            }
+        }
+
+        function restartQuiz() {
+            resultScreen.classList.add('hidden');
+            resultScreen.classList.remove('block');
+            startQuiz();
+        }
+    </script>
+</body>
+</html>
